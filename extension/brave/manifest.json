@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Scraper Core",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Session-isolated stealth scraper with C backend",
   "permissions": [
     "nativeMessaging",
@@ -25,6 +25,9 @@
   },
   "background": {
     "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   },
   "web_accessible_resources": [
     {

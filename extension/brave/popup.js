@@ -42,6 +42,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Poll for live updates every 800ms while popup is open
   pollInterval = setInterval(refreshState, 800);
+
+  // ── Attach event listeners ─────────────────────────────────────────────────
+  document.getElementById("trackBtn").addEventListener("click", toggleTrack);
+  document.getElementById("btn-dom").addEventListener("click", () => doAction('dom'));
+  document.getElementById("btn-screenshot").addEventListener("click", () => doAction('screenshot'));
+  document.getElementById("btn-html").addEventListener("click", () => doAction('html'));
+  document.getElementById("btn-cookies").addEventListener("click", () => doAction('cookies'));
+  document.getElementById("btn-storage").addEventListener("click", () => doAction('storage'));
+  document.getElementById("btn-dashboard").addEventListener("click", openDashboard);
+  document.getElementById("btn-clear").addEventListener("click", clearTabData);
+  document.getElementById("btn-footer-dashboard").addEventListener("click", openDashboard);
 });
 
 window.addEventListener("unload", () => {
@@ -169,7 +180,7 @@ async function doAction(action) {
 }
 
 function openDashboard() {
-  chrome.tabs.create({ url: "http://localhost:3000" });
+  chrome.tabs.create({ url: "http://localhost:8080" });
 }
 
 async function clearTabData() {

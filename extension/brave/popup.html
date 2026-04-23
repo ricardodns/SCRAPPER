@@ -363,7 +363,7 @@ body {
 
 <!-- Track toggle -->
 <div class="track-section">
-  <button class="track-btn off" id="trackBtn" onclick="toggleTrack()">
+  <button class="track-btn off" id="trackBtn">
     <div class="track-dot"></div>
     <span class="track-btn-label" id="trackLabel">Track This Tab</span>
     <span class="track-req-count" id="reqCount"></span>
@@ -393,22 +393,22 @@ body {
 <!-- Quick actions -->
 <div class="actions-head">Quick Capture</div>
 <div class="actions-grid" id="actionsGrid">
-  <button class="action-btn" id="btn-dom" onclick="doAction('dom')">
+  <button class="action-btn" id="btn-dom">
     <span class="icon">⊞</span><span>DOM Snapshot</span>
   </button>
-  <button class="action-btn" id="btn-screenshot" onclick="doAction('screenshot')">
+  <button class="action-btn" id="btn-screenshot">
     <span class="icon">⬜</span><span>Screenshot</span>
   </button>
-  <button class="action-btn" id="btn-html" onclick="doAction('html')">
+  <button class="action-btn" id="btn-html">
     <span class="icon">⌨</span><span>Save HTML</span>
   </button>
-  <button class="action-btn" id="btn-cookies" onclick="doAction('cookies')">
+  <button class="action-btn" id="btn-cookies">
     <span class="icon">◈</span><span>Dump Cookies</span>
   </button>
-  <button class="action-btn" id="btn-storage" onclick="doAction('storage')">
+  <button class="action-btn" id="btn-storage">
     <span class="icon">⊟</span><span>Dump Storage</span>
   </button>
-  <button class="action-btn" id="btn-dashboard" onclick="openDashboard()">
+  <button class="action-btn" id="btn-dashboard">
     <span class="icon">⟶</span><span>Dashboard</span>
   </button>
 </div>
@@ -422,9 +422,9 @@ body {
 
 <!-- Footer -->
 <div class="footer">
-  <button class="footer-link" onclick="clearTabData()">Clear Tab Data</button>
+  <button class="footer-link" id="btn-clear">Clear Tab Data</button>
   <span class="footer-sep">·</span>
-  <button class="footer-link" onclick="openDashboard()">Open Dashboard</button>
+  <button class="footer-link" id="btn-footer-dashboard">Open Dashboard</button>
   <span style="margin-left:auto; font-size:8px; color: var(--dim)" id="footerDomain"></span>
 </div>
 

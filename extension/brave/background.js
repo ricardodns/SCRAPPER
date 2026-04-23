@@ -460,7 +460,7 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
   const tabId  = source.tabId;
   const domain = tabContexts.get(tabId) || 'unknown';
 
-  // ── HTTP request/response (unchanged) ─────────────────────────────────────
+  // ── HTTP request/response (CAPTURE ALL) ───────────────────────────────────
   if (method === 'Network.requestWillBeSent') {
     const req = params.request;
     pendingRequests.set(params.requestId, {
@@ -468,16 +468,15 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
       headers: req.headers, postData: req.postData || null
     });
     const flags = isInteresting(req);
-    if (flags.length > 0) {
-      const evt = {
-        type: 'request', domain, url: req.url, method: req.method,
-        headers: req.headers, postData: req.postData || null,
-        reqType: params.type, flags, requestId: params.requestId,
-        timestamp: Date.now()
-      };
-      send(evt);
-      recordTabEvent(tabId, evt);
-    }
+    // Always capture, not just when flags.length > 0
+    const evt = {
+      type: 'request', domain, url: req.url, method: req.method,
+      headers: req.headers, postData: req.postData || null,
+      reqType: params.type, flags, requestId: params.requestId,
+      timestamp: Date.now()
+    };
+    send(evt);
+    recordTabEvent(tabId, evt);
   }
 
   else if (method === 'Network.responseReceived') {
@@ -487,17 +486,16 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
     const isJson  = (res.mimeType || '').includes('json') || (res.headers?.['content-type'] || '').includes('json');
     const isHtml  = (res.mimeType || '').includes('html');
 
-    if (flags.length > 0 || isJson || isHtml) {
-      const evt = {
-        type: 'response', domain, url: res.url, status: res.status,
-        statusText: res.statusText, headers: res.headers,
-        mimeType: res.mimeType, requestId: params.requestId,
-        reqMethod: pending?.method, reqHeaders: pending?.headers,
-        reqPostData: pending?.postData, flags, timestamp: Date.now()
-      };
-      send(evt);
-      recordTabEvent(tabId, evt);
-    }
+    // Always capture, not just when interesting
+    const evt = {
+      type: 'response', domain, url: res.url, status: res.status,
+      statusText: res.statusText, headers: res.headers,
+      mimeType: res.mimeType, requestId: params.requestId,
+      reqMethod: pending?.method, reqHeaders: pending?.headers,
+      reqPostData: pending?.postData, flags, timestamp: Date.now()
+    };
+    send(evt);
+    recordTabEvent(tabId, evt);
     pendingRequests.delete(params.requestId);
   }
 
@@ -508,32 +506,28 @@ chrome.debugger.onEvent.addListener((source, method, params) => {
     const isJson = mime.includes('json') || mime.includes('javascript');
     const isHtml = mime.includes('html');
 
-    if (isJson || isHtml || flags.length > 0) {
-      chrome.debugger.sendCommand({ tabId }, 'Fetch.getResponseBody',
-        { requestId: params.requestId }, (body) => {
-          if (!chrome.runtime.lastError && body?.body) {
-            const evt = {
-              type: 'response_body', domain, url: req.url,
-              method: req.method, status: params.responseStatusCode,
-              body: body.body, base64: body.base64Encoded,
-              mimeType: mime,
-              reqHeaders: req.headers, resHeaders: params.responseHeaders,
-              requestId: params.requestId,
-              flags, timestamp: Date.now()
-            };
-            send(evt);
-            recordTabEvent(tabId, evt);
-            if (!body.base64Encoded && body.body && (isJson || isHtml)) {
-              scanBodyForTokens(body.body, req.url, domain, tabId);
-            }
+    // Always try to get body
+    chrome.debugger.sendCommand({ tabId }, 'Fetch.getResponseBody',
+      { requestId: params.requestId }, (body) => {
+        if (!chrome.runtime.lastError && body?.body) {
+          const evt = {
+            type: 'response_body', domain, url: req.url,
+            method: req.method, status: params.responseStatusCode,
+            body: body.body, base64: body.base64Encoded,
+            mimeType: mime,
+            reqHeaders: req.headers, resHeaders: params.responseHeaders,
+            requestId: params.requestId,
+            flags, timestamp: Date.now()
+          };
+          send(evt);
+          recordTabEvent(tabId, evt);
+          if (!body.base64Encoded && body.body && (isJson || isHtml)) {
+            scanBodyForTokens(body.body, req.url, domain, tabId);
           }
-          chrome.debugger.sendCommand({ tabId }, 'Fetch.continueRequest',
-            { requestId: params.requestId });
-        });
-    } else {
-      chrome.debugger.sendCommand({ tabId }, 'Fetch.continueRequest',
-        { requestId: params.requestId });
-    }
+        }
+        chrome.debugger.sendCommand({ tabId }, 'Fetch.continueRequest',
+          { requestId: params.requestId });
+      });
   }
 
   // ══════════════════════════════════════════════════════════════════════════
